@@ -43,10 +43,14 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                         "/configuration/security",
                         "/swagger-ui.html",
                         "/webjars/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/h2-console/**").permitAll()
+                .anyRequest().hasAuthority("user")
                 .and().exceptionHandling()
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http.headers().frameOptions().sameOrigin();
     }
 
     @Override

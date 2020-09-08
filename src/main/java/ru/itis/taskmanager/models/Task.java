@@ -28,4 +28,8 @@ public class Task {
     private LocalDateTime datetime;
 
     private boolean completed;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userid")
+    private TaskUser userid;
 }
