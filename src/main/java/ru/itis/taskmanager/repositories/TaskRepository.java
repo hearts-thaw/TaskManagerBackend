@@ -10,6 +10,8 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    @Query("SELECT t FROM Task AS t WHERE t.completed = :completed")
-    List<Task> findAllTasksCompleted(boolean completed);
+    @Query("SELECT t FROM Task AS t WHERE t.userid.id = :userid AND t.completed = :completed")
+    List<Task> findAllTasksByUserIdAndCompletion(Long userid, Boolean completed);
+
+    void deleteByIdAndUserid_Id(Long id, Long userid_id);
 }

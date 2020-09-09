@@ -1,5 +1,6 @@
 package ru.itis.taskmanager.models;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 @Table(name = "tasks")
 @NoArgsConstructor
 public class Task {
+    @ApiModelProperty(hidden = true)
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,11 +26,15 @@ public class Task {
     @NotBlank(message = "Text is mandatory")
     private String text;
 
+    @ApiModelProperty(hidden = true)
     @PastOrPresent(message = "Task must be added with past or present timestamp")
     private LocalDateTime datetime;
 
-    private boolean completed;
+    @ApiModelProperty(hidden = true)
+    @Builder.Default
+    private boolean completed = false;
 
+    @ApiModelProperty(hidden = true)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "userid")
     private TaskUser userid;
