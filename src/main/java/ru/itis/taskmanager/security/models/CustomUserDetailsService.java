@@ -1,6 +1,7 @@
 package ru.itis.taskmanager.security.models;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -8,13 +9,17 @@ import org.springframework.stereotype.Service;
 import ru.itis.taskmanager.models.TaskUser;
 import ru.itis.taskmanager.repositories.TaskUserRepository;
 
+import java.util.Collections;
 import java.util.Optional;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    @Autowired
-    private TaskUserRepository usersRepository;
+    private final TaskUserRepository usersRepository;
+
+    public CustomUserDetailsService(TaskUserRepository usersRepository) {
+        this.usersRepository = usersRepository;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -22,6 +27,16 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         userCandidate.orElseThrow(() -> new UsernameNotFoundException("Invalid credentials"));
 
-        return new CustomUserDetailsImpl(userCandidate.get());
+        return buildForAuth(userCandidate.get());
+    }
+
+    private User buildForAuth(TaskUser user) {
+        return new CustomUser(user.getUsername(),
+                user.getPassword(),
+                true,
+                true,
+                true,
+                true,
+                Collections.singleton(new SimpleGrantedAuthority("user")), user);
     }
 }

@@ -1,17 +1,19 @@
 package ru.itis.taskmanager.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 import ru.itis.taskmanager.models.Task;
 
 import java.util.List;
+import java.util.Optional;
 
-@Repository
-public interface TaskRepository extends JpaRepository<Task, Long> {
+public interface TaskRepository extends Repository<Task> {
+    Optional<List<Task>> findAllTasksByCompletedAndOnfireAndFroth_Id(Boolean completed, Boolean onfire,
+                                                                     Long frothid, Long userid);
 
-    @Query("SELECT t FROM Task AS t WHERE t.userid.id = :userid AND t.completed = :completed")
-    List<Task> findAllTasksByUserIdAndCompletion(Long userid, Boolean completed);
+    Optional<List<Task>> findAll(Long frothid, Long userid);
 
-    void deleteByIdAndUserid_Id(Long id, Long userid_id);
+    Optional<Task> save(Task task, Long frothid, Long userid);
+
+    Optional<Task> updateCompleted(Long id, Long userid);
+
+    Optional<Task> updateEdited(Long id, String text, Long userid);
 }

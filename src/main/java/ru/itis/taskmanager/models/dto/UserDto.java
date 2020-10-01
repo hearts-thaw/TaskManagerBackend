@@ -4,15 +4,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import ru.itis.taskmanager.models.TaskUser;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Builder
 @Data
 @NoArgsConstructor
+@Profile("jdbc")
 public class UserDto {
     private String username;
 
@@ -21,7 +23,7 @@ public class UserDto {
                 .username(user.getUsername()).build();
     }
 
-    public static List<UserDto> from(List<TaskUser> users) {
-        return users.stream().map(UserDto::from).collect(Collectors.toList());
+    public static Set<UserDto> from(Set<TaskUser> users) {
+        return users.stream().map(UserDto::from).collect(Collectors.toSet());
     }
 }

@@ -21,6 +21,12 @@ import ru.itis.taskmanager.security.models.CustomUserDetailsService;
 @EnableWebSecurity
 public class WebSecurity extends WebSecurityConfigurerAdapter {
 
+//    private static final String ROLE_PREFIX = "";
+//    @Bean
+//    public GrantedAuthorityDefaults grantedAuthorityDefaults() {
+//        return new GrantedAuthorityDefaults(ROLE_PREFIX);
+//    }
+
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
@@ -41,7 +47,7 @@ public class WebSecurity extends WebSecurityConfigurerAdapter {
                         "/configuration/ui",
                         "/swagger-resources/**",
                         "/configuration/security",
-                        "/swagger-ui.html",
+                        "/swagger-ui/**",
                         "/webjars/**").permitAll()
                 .antMatchers("/h2-console/**").permitAll()
                 .anyRequest().hasAuthority("user")

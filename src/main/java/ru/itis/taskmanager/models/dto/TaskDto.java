@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import ru.itis.taskmanager.models.Task;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 @Builder
 @Data
 @NoArgsConstructor
+@Profile("jdbc")
 public class TaskDto {
     private Long id;
 

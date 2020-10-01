@@ -1,12 +1,11 @@
 package ru.itis.taskmanager.repositories;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 import ru.itis.taskmanager.models.TaskUser;
 
 import java.util.Optional;
 
-@Repository
-public interface TaskUserRepository extends JpaRepository<TaskUser, Long> {
+public interface TaskUserRepository {
     Optional<TaskUser> findTaskUserByUsername(String username);
+
+    TaskUser save(TaskUser taskUser);
 }

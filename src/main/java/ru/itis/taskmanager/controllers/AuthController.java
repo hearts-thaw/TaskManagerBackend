@@ -29,7 +29,7 @@ public class AuthController {
     private CustomUserDetailsService userDetailsService;
 
     @PostMapping
-    public ResponseEntity<?> createAuthToken(@RequestBody AuthRequest authRequest) throws Exception {
+    public ResponseEntity<?> createAuthToken(@RequestBody AuthRequest authRequest) {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -38,9 +38,8 @@ public class AuthController {
                     )
             );
         } catch (BadCredentialsException e) {
-            throw new Exception("Incorrect username or password", e);
+            throw new IllegalArgumentException("Incorrect username or password");
         }
-
 
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername(authRequest.getUsername());

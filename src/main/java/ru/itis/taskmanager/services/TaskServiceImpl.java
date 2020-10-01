@@ -1,20 +1,22 @@
 package ru.itis.taskmanager.services;
 
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.itis.taskmanager.models.Froth;
 import ru.itis.taskmanager.models.Task;
 import ru.itis.taskmanager.models.TaskUser;
 import ru.itis.taskmanager.repositories.TaskRepository;
-import ru.itis.taskmanager.security.models.CustomUserDetailsImpl;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// FIXME: try-catches on JpaRepositories methods (such as NullPointer/IllegalArgument)
+@Profile("jdbc")
 @Service
 @Transactional
-public class TaskServiceImpl extends AuthenticatedService<CustomUserDetailsImpl> implements TaskService {
+public class TaskServiceImpl implements TaskService {
 
     private final static short TASKS_LIMIT = Short.parseShort("200");
 
@@ -25,13 +27,20 @@ public class TaskServiceImpl extends AuthenticatedService<CustomUserDetailsImpl>
     }
 
     @Override
-    public List<Task> getAllTasks(Boolean completed) {
-        return taskRepository.findAllTasksByUserIdAndCompletion(getId(), completed);
+    public List<Task> getAllTasks(Boolean completed, Boolean onfire, Long frothid) {
+        return taskRepository.findAllTasksByCompletedAndOnfireAndFroth_Id(completed, onfire, frothid, getId())
+                .orElse(Collections.emptyList());
     }
 
     @Override
-    public Task addTask(Task task) {
-        if (checkForLimit(TASKS_LIMIT)) {
+    public List<Task> getAllTasks(Long frothid) {
+        return taskRepository.findAll(frothid, getId())
+                .orElse(Collections.emptyList());
+    }
+
+    @Override
+    public Task addTask(Task task, Long frothid) {
+        if (checkForLimit(TASKS_LIMIT, frothid)) {
             throw new IllegalArgumentException("User has too much tasks!");
         }
 
@@ -39,19 +48,26 @@ public class TaskServiceImpl extends AuthenticatedService<CustomUserDetailsImpl>
                 .text(task.getText())
                 .completed(false)
                 .datetime(LocalDateTime.now())
-                .userid((TaskUser) getUser()).build());
+                .user_id(TaskUser.builder().id(getId()).build())
+                .froth_id(Froth.builder().id(frothid).build())
+                .onfire(false).build(), frothid, getId()).orElseThrow(
+                () -> new IllegalArgumentException("Can't add task!")
+        );
     }
 
     @Override
     public Task deleteTask(Long id) {
-        Task taskFound = taskRepository.findById(id).orElseThrow(
+        Task taskFound = taskRepository.findById(id, getId()).orElseThrow(
                 () -> new IllegalArgumentException("Wrong id: " + id));
 
-        if (!taskFound.getUserid().getId().equals(getId())) {
+        System.out.println("Id of user in task: " + taskFound.getUser_id().getId() + "; " +
+                "Id of user in auth: " + getId());
+
+        if (!taskFound.getUser_id().getId().equals(getId())) {
             throw new IllegalArgumentException("Not allowed");
         }
 
-        taskRepository.deleteByIdAndUserid_Id(id, getId());
+        taskRepository.delete(id, getId());
 
         return taskFound;
 
@@ -59,40 +75,29 @@ public class TaskServiceImpl extends AuthenticatedService<CustomUserDetailsImpl>
 
     @Override
     public List<Task> deleteTask(List<Long> ids) {
-        List<Task> tasksFound = taskRepository.findAllById(ids);
+        List<Task> tasksFound = taskRepository.findAllByIds(ids, getId()).orElseThrow(
+                () -> new IllegalArgumentException("No such tasks")
+        );
 
         return tasksFound.stream().map(task -> deleteTask(task.getId())).collect(Collectors.toList());
     }
 
     @Override
-    public Task editTask(Long id, String text) {
-        if (checkForLimit(TASKS_LIMIT)) {
-            throw new IllegalArgumentException("User has too much tasks!");
-        }
-
-        Task taskFound = taskRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Wrong id: " + id));
-
-        taskFound.setText(text);
-
-        return taskRepository.save(taskFound);
+    public Task editTask(Long id, String text, Long frothid) {
+        return taskRepository.updateEdited(id, text, getId()).orElseThrow(
+                () -> new IllegalArgumentException("No task with id: " + id)
+        );
     }
 
     @Override
-    public Task markComplete(Long id) {
-        Task taskFound = taskRepository.findById(id).orElseThrow(
-                () -> new IllegalArgumentException("Wrong id: " + id));
-
-        if (taskFound.isCompleted()) {
-            throw new IllegalArgumentException("Task is already completed, try deletion");
-        }
-        taskFound.setCompleted(true);
-
-        return taskRepository.save(taskFound);
+    public Task markComplete(Long id, Long frothid) {
+        return taskRepository.updateCompleted(id, getId()).orElseThrow(
+                () -> new IllegalArgumentException("No task with id: " + id)
+        );
     }
 
-    public boolean checkForLimit(short limit) {
-        List<Task> tasks = getAllTasks(true);
+    public boolean checkForLimit(short limit, Long frothid) {
+        List<Task> tasks = taskRepository.findAll(frothid, getId()).orElse(Collections.emptyList());
 
         return tasks.size() > limit;
     }

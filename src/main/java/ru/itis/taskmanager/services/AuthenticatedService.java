@@ -1,15 +1,15 @@
 package ru.itis.taskmanager.services;
 
 import org.springframework.security.core.context.SecurityContextHolder;
-import ru.itis.taskmanager.security.models.CustomUserDetails;
-import ru.itis.taskmanager.security.models.User;
+import ru.itis.taskmanager.models.TaskUser;
+import ru.itis.taskmanager.security.models.CustomUser;
 
-public class AuthenticatedService<T extends CustomUserDetails<? extends User>> {
-    protected Long getId() {
-        return getUser().getId();
+public interface AuthenticatedService<T extends CustomUser> {
+    default TaskUser getUser() {
+        return ((T) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
     }
 
-    protected User getUser() {
-        return ((T) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUser();
+    default Long getId() {
+        return getUser().getId();
     }
 }

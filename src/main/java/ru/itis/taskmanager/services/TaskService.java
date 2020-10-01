@@ -1,20 +1,22 @@
 package ru.itis.taskmanager.services;
 
 import ru.itis.taskmanager.models.Task;
+import ru.itis.taskmanager.security.models.CustomUser;
 
 import java.util.List;
 
-public interface TaskService {
-    List<Task> getAllTasks(Boolean completed);
+public interface TaskService extends AuthenticatedService<CustomUser> {
+    List<Task> getAllTasks(Boolean completed, Boolean onfire, Long frothid);
 
-    Task addTask(Task task);
+    List<Task> getAllTasks(Long frothid);
 
-    Task deleteTask(Long id);
+    Task addTask(Task task, Long frothid);
 
-    List<Task> deleteTask(List<Long> ids);
+    List<Task> deleteTask(List<Long> id);
 
-    Task editTask(Long id, String text);
+    Task deleteTask(Long ids);
 
-    Task markComplete(Long id);
+    Task editTask(Long id, String text, Long frothid);
 
+    Task markComplete(Long id, Long frothid);
 }
